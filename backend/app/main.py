@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 import httpx
+import asyncio  # ✅ ADDED
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
@@ -26,6 +27,7 @@ async def lifespan(app: FastAPI):
 
     redis = redis_from_url(settings.redis_url)
     app.state.settings = settings
+
     http_client = httpx.AsyncClient(
         timeout=httpx.Timeout(30.0, connect=10.0),
         limits=httpx.Limits(max_keepalive_connections=5),
@@ -39,6 +41,7 @@ async def lifespan(app: FastAPI):
         client=fyers_client,
         settings=settings,
     )
+
     poller = OptionChainPoller(
         service=option_chain_service,
         manager=connection_manager,
@@ -52,7 +55,13 @@ async def lifespan(app: FastAPI):
     app.state.option_chain_poller = poller
     app.state.fyers_client = fyers_client
 
-    await poller.start()
+    # ✅ FIX: run poller in background (NON-BLOCKING)
+    try:
+        asyncio.create_task(poller.start())
+        print("✅ Poller started in background")
+    except Exception as e:
+        print("❌ Poller start failed:", e)
+
     try:
         yield
     finally:
