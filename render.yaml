@@ -1,5 +1,4 @@
 services:
-  # Backend API
   - type: web
     name: bharat-traders-api
     runtime: python
@@ -27,7 +26,6 @@ services:
         value: https://bharat-traders-ui.onrender.com/oauth-callback
       - key: FYERS_REDIRECT_URI
         value: https://bharat-traders-api.onrender.com/api/v1/fyers/callback
-      # Fields the user will fill in the dashboard:
       - key: FYERS_CLIENT_ID
         sync: false
       - key: FYERS_SECRET_KEY
@@ -37,7 +35,6 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
 
-  # Frontend Dashboard
   - type: web
     name: bharat-traders-ui
     runtime: static
@@ -52,7 +49,6 @@ services:
       - key: VITE_APP_NAME
         value: Bharat Traders Dashboard
 
-  # Redis (Key-Value)
   - type: keyvalue
     name: bharat-traders-cache
     plan: free
