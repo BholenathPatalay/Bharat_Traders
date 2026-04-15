@@ -53,7 +53,7 @@ services:
     name: bharat-traders-cache
     plan: free
     ipAllowList:
-      - cidrBlock: 0.0.0.0/0
+      - source: 0.0.0.0/0
         description: all
 
 databases:
