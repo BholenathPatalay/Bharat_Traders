@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: nifty50-option-chain-backend
+Version: 0.1.0
+Summary: FastAPI backend for a Nifty 50 live option chain dashboard
+Requires-Python: >=3.11
+Requires-Dist: asyncpg<1.0.0,>=0.30.0
+Requires-Dist: email-validator<2.2,>=1.1.0
+Requires-Dist: fastapi<1.0.0,>=0.115.0
+Requires-Dist: fastapi-users[oauth,sqlalchemy]<13.0.0,>=12.1.3
+Requires-Dist: httpx<1.0.0,>=0.28.0
+Requires-Dist: orjson<4.0.0,>=3.10.0
+Requires-Dist: pydantic-settings<3.0.0,>=2.7.0
+Requires-Dist: python-multipart==0.0.7
+Requires-Dist: redis<6.0.0,>=5.2.0
+Requires-Dist: sqlalchemy<3.0.0,>=2.0.36
+Requires-Dist: uvicorn[standard]<1.0.0,>=0.34.0
