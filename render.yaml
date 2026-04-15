@@ -1,4 +1,5 @@
 services:
+  # Backend API
   - type: web
     name: bharat-traders-api
     runtime: python
@@ -21,11 +22,12 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://bharat-traders-ui.onrender.com
+        value: https://bharat-traders-five.vercel.app
       - key: GOOGLE_OAUTH_REDIRECT_URL
-        value: https://bharat-traders-ui.onrender.com/oauth-callback
+        value: https://bharat-traders-five.vercel.app/oauth-callback
       - key: FYERS_REDIRECT_URI
         value: https://bharat-traders-api.onrender.com/api/v1/fyers/callback
+      # Fields to fill in the dashboard:
       - key: FYERS_CLIENT_ID
         sync: false
       - key: FYERS_SECRET_KEY
@@ -35,20 +37,7 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
 
-  - type: web
-    name: bharat-traders-ui
-    runtime: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://bharat-traders-api.onrender.com
-      - key: VITE_WS_BASE_URL
-        value: wss://bharat-traders-api.onrender.com
-      - key: VITE_APP_NAME
-        value: Bharat Traders Dashboard
-
+  # Redis (Key-Value)
   - type: keyvalue
     name: bharat-traders-cache
     plan: free
