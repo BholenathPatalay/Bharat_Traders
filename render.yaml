@@ -57,7 +57,9 @@ databases:
     plan: free
 
 services:
-  - type: redis
+  - type: keyvalue
     name: bharat-traders-cache
     plan: free
-    ipAllowList: [] # Only allow internal connections
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: internal-only-mock
