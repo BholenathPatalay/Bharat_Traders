@@ -1,0 +1,63 @@
+services:
+  # Backend API
+  - type: web
+    name: bharat-traders-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ping
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bharat-traders-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: bharat-traders-cache
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://bharat-traders-ui.onrender.com
+      - key: GOOGLE_OAUTH_REDIRECT_URL
+        value: https://bharat-traders-ui.onrender.com/oauth-callback
+      # Fields the user will need to fill in the dashboard:
+      - key: FYERS_CLIENT_ID
+        sync: false
+      - key: FYERS_SECRET_KEY
+        sync: false
+      - key: FYERS_REDIRECT_URI
+        value: https://bharat-traders-api.onrender.com/api/v1/fyers/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # Frontend Dashboard
+  - type: static
+    name: bharat-traders-ui
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://bharat-traders-api.onrender.com
+      - key: VITE_WS_BASE_URL
+        value: wss://bharat-traders-api.onrender.com
+      - key: VITE_APP_NAME
+        value: Bharat Traders Dashboard
+
+databases:
+  - name: bharat-traders-db
+    plan: free
+
+services:
+  - type: redis
+    name: bharat-traders-cache
+    plan: free
+    ipAllowList: [] # Only allow internal connections
