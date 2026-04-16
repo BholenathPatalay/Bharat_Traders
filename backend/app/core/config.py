@@ -29,12 +29,12 @@ class Settings(BaseSettings):
 
     # Databases
     database_url: str = Field(..., alias="DATABASE_URL")
-    redis_url: str = Field(..., alias="REDIS_URL")
+    redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
 
     # FYERS API
-    fyers_client_id: str = Field(..., alias="FYERS_CLIENT_ID")
-    fyers_secret_key: str = Field(..., alias="FYERS_SECRET_KEY")
-    fyers_redirect_uri: str = Field(..., alias="FYERS_REDIRECT_URI")
+    fyers_client_id: str = Field("", alias="FYERS_CLIENT_ID")
+    fyers_secret_key: str = Field("", alias="FYERS_SECRET_KEY")
+    fyers_redirect_uri: str = Field("", alias="FYERS_REDIRECT_URI")
     fyers_access_token: str = Field("", alias="FYERS_ACCESS_TOKEN")
     fyers_symbol: str = Field("NSE:NIFTY50-INDEX", alias="FYERS_SYMBOL")
     fyers_strikecount: int = Field(12, alias="FYERS_STRIKECOUNT")
@@ -49,9 +49,9 @@ class Settings(BaseSettings):
     option_chain_refresh_seconds: int = Field(15, alias="OPTION_CHAIN_REFRESH_SECONDS")
 
     # Google OAuth
-    google_client_id: str = Field(..., alias="GOOGLE_CLIENT_ID")
-    google_client_secret: str = Field(..., alias="GOOGLE_CLIENT_SECRET")
-    google_oauth_redirect_url: str = Field(..., alias="GOOGLE_OAUTH_REDIRECT_URL")
+    google_client_id: str = Field("", alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str = Field("", alias="GOOGLE_CLIENT_SECRET")
+    google_oauth_redirect_url: str = Field("", alias="GOOGLE_OAUTH_REDIRECT_URL")
     auth_token_lifetime_seconds: int = 60 * 60 * 12
 
     @field_validator("cors_origins", mode="before")

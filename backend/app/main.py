@@ -14,6 +14,7 @@ from app.routers import fyers, health, option_chain, watchlist
 from app.schemas.user import UserRead, UserUpdate
 from app.services.broadcaster import ConnectionManager
 from app.services.fyers import FyersClient
+from app.services.in_memory_redis import InMemoryRedis
 from app.services.option_chain_service import OptionChainService
 from app.services.poller import OptionChainPoller
 
@@ -26,16 +27,14 @@ async def lifespan(app: FastAPI):
     # ✅ Create DB tables
     await create_db_and_tables()
 
-    # ✅ Initialize Redis
+    # ✅ Initialize Redis (fallback to in-memory cache if unavailable)
     redis = redis_from_url(settings.redis_url)
-
-    # ✅ CRITICAL FIX: verify Redis connection (prevents silent 502)
     try:
         await redis.ping()
         print("✅ Redis connected successfully")
     except Exception as e:
-        print("❌ Redis connection failed:", e)
-        raise RuntimeError("Redis connection failed. Check REDIS_URL") from e
+        print("⚠️ Redis connection failed, using in-memory fallback:", e)
+        redis = InMemoryRedis()
 
     app.state.settings = settings
 
