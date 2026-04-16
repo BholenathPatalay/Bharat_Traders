@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import httpx
@@ -81,7 +81,7 @@ class DhanClient:
             return None
         # Dhan returns expiries as YYYY-MM-DD strings; list is typically ascending.
         # Pick the first expiry that isn't in the past, else fall back to the last one.
-        today = datetime.now(UTC).date()
+        today = datetime.now(timezone.utc).date()
         for expiry in expiries:
             try:
                 if datetime.fromisoformat(expiry).date() >= today:
@@ -221,7 +221,7 @@ class OptionChainService:
         return snapshot.model_copy(update={"pinned_strikes": sorted(set(pinned_strikes))})
 
     def _normalize_payload(self, payload: dict[str, Any]) -> OptionChainSnapshot:
-        generated_at = datetime.now(UTC)
+        generated_at = datetime.now(timezone.utc)
 
         if isinstance(payload.get("data"), dict) and "oc" in payload["data"]:
             return self._normalize_dhan_payload(payload, generated_at=generated_at)
@@ -301,7 +301,7 @@ class OptionChainService:
         )
 
     def _mock_snapshot(self) -> OptionChainSnapshot:
-        generated_at = datetime.now(UTC)
+        generated_at = datetime.now(timezone.utc)
         underlying = UnderlyingQuote(
             symbol=self._settings.dhan_symbol,
             spot_price=None,

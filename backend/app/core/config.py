@@ -24,11 +24,14 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     # Security & CORS
-    secret_key: str = Field(..., alias="SECRET_KEY")
+    secret_key: str = Field("dev-insecure-secret-change-me", alias="SECRET_KEY")
     cors_origins: Annotated[list[str], NoDecode] = Field(default_factory=list, alias="CORS_ORIGINS")
 
     # Databases
-    database_url: str = Field(..., alias="DATABASE_URL")
+    database_url: str = Field(
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/nifty_dashboard",
+        alias="DATABASE_URL",
+    )
     redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
 
     # FYERS API
@@ -70,6 +73,22 @@ class Settings(BaseSettings):
                     pass
             return [item.strip() for item in raw.split(",") if item.strip()]
         return value
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """
+        Accept common managed-DB URL formats and normalize to async SQLAlchemy DSN.
+        """
+        if not isinstance(value, str):
+            return value
+        raw = value.strip()
+        if raw.startswith("postgres://"):
+            # Railway/Heroku-style URL
+            return "postgresql+asyncpg://" + raw[len("postgres://") :]
+        if raw.startswith("postgresql://") and "+asyncpg" not in raw:
+            return "postgresql+asyncpg://" + raw[len("postgresql://") :]
+        return raw
 
     @property
     def oauth_csrf_cookie_secure(self) -> bool:
