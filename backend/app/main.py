@@ -23,16 +23,29 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ✅ Create DB tables
     await create_db_and_tables()
 
+    # ✅ Initialize Redis
     redis = redis_from_url(settings.redis_url)
+
+    # ✅ CRITICAL FIX: verify Redis connection (prevents silent 502)
+    try:
+        await redis.ping()
+        print("✅ Redis connected successfully")
+    except Exception as e:
+        print("❌ Redis connection failed:", e)
+        raise RuntimeError("Redis connection failed. Check REDIS_URL") from e
+
     app.state.settings = settings
 
+    # ✅ HTTP client
     http_client = httpx.AsyncClient(
         timeout=httpx.Timeout(30.0, connect=10.0),
         limits=httpx.Limits(max_keepalive_connections=5),
     )
 
+    # ✅ Services
     connection_manager = ConnectionManager()
     fyers_client = FyersClient(http_client=http_client, redis=redis, settings=settings)
 
@@ -48,6 +61,7 @@ async def lifespan(app: FastAPI):
         refresh_seconds=settings.option_chain_refresh_seconds,
     )
 
+    # ✅ Store in app state
     app.state.redis = redis
     app.state.http_client = http_client
     app.state.connection_manager = connection_manager
@@ -65,7 +79,12 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
-        await poller.stop()
+        # ✅ Graceful shutdown
+        try:
+            await poller.stop()
+        except Exception as e:
+            print("⚠️ Poller stop error:", e)
+
         await http_client.aclose()
         await redis.aclose()
 
@@ -77,6 +96,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -85,6 +105,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ Routes
 app.include_router(health.router)
 
 app.include_router(
@@ -116,7 +137,7 @@ app.include_router(option_chain.router, prefix=settings.api_v1_prefix)
 app.include_router(watchlist.router, prefix=settings.api_v1_prefix)
 app.include_router(fyers.router, prefix=settings.api_v1_prefix)
 
-
+# ✅ WebSocket
 @app.websocket("/ws/option-chain")
 async def websocket_alias(websocket: WebSocket):
     await option_chain.option_chain_socket(websocket)
