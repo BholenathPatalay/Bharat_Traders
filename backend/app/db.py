@@ -12,6 +12,9 @@ from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint, fu
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+# ✅ ADDED (important for Supabase pooler)
+from sqlalchemy.pool import NullPool
+
 from app.core.config import get_settings
 
 
@@ -57,7 +60,17 @@ class WatchlistPin(Base):
     user: Mapped[User] = relationship(back_populates="watchlist_pins")
 
 
-engine = create_async_engine(settings.database_url, future=True)
+# ✅ FIXED ENGINE CONFIG (DO NOT REMOVE ANYTHING BELOW)
+engine = create_async_engine(
+    settings.database_url,
+    future=True,
+    poolclass=NullPool,  # required for Supabase pooler
+    pool_pre_ping=True,
+    connect_args={
+        "statement_cache_size": 0  # fixes asyncpg crash
+    }
+)
+
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
