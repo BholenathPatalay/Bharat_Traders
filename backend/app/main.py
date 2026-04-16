@@ -24,8 +24,14 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ✅ Create DB tables
-    await create_db_and_tables()
+    # ✅ Create DB tables (non-fatal in production so the API can still serve non-DB routes)
+    app.state.db_ready = True
+    try:
+        await create_db_and_tables()
+        print("✅ Database schema initialized")
+    except Exception as e:
+        app.state.db_ready = False
+        print("⚠️ Database initialization failed; continuing without DB-backed routes:", e)
 
     # ✅ Initialize Redis (fallback to in-memory cache if unavailable)
     redis = redis_from_url(settings.redis_url)
