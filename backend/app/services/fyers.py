@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlencode
 
@@ -98,5 +98,5 @@ class FyersClient:
         )
         response.raise_for_status()
         payload = response.json()
-        payload.setdefault("_generated_at", datetime.now(UTC).isoformat())
+        payload.setdefault("_generated_at", datetime.now(timezone.utc).isoformat())
         return payload

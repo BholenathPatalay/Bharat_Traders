@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from redis.asyncio import Redis
@@ -39,7 +39,7 @@ class OptionChainService:
 
         try:
             fresh = await self._client.fetch_option_chain()
-            fresh["_cached_at"] = datetime.now(UTC).isoformat()
+            fresh["_cached_at"] = datetime.now(timezone.utc).isoformat()
 
             await self._redis.set(
                 self._CACHE_KEY,
@@ -209,7 +209,7 @@ class OptionChainService:
             expiry=expiry_str,
         )
 
-        generated_at = datetime.now(UTC)
+        generated_at = datetime.now(timezone.utc)
 
         return OptionChainSnapshot(
             generated_at=generated_at,
