@@ -12,8 +12,9 @@ async def ping() -> dict[str, str]:
 @router.get("/health")
 async def healthcheck(request: Request) -> dict[str, int | str]:
     manager = request.app.state.connection_manager
+    db_ready = getattr(request.app.state, "db_ready", True)
     return {
         "status": "ok",
         "connections": manager.count,
+        "database": "ok" if db_ready else "degraded",
     }
-
